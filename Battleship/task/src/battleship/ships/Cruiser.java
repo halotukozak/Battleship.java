@@ -1,7 +1,18 @@
 package battleship.ships;
 
 public class Cruiser extends Ship {
+    static final String name = "Cruiser";
+    static final int length = 3;
+
     public Cruiser() {
-        super("Cruiser", 3);
+        super(name, length);
+    }
+    public Cruiser(String owner) {
+        super(name, length, owner);
+    }
+
+    @Override
+    public Ship copy() {
+        return new Cruiser("computer");
     }
 }

@@ -100,12 +100,27 @@ public class Board {
         return this.getRow(row).getCell(col);
     }
 
+    private Row.Cell getCell(String c) throws Exception {
+        Coordinate coordinate = new Coordinate(c);
+        return this.getCell(coordinate.row, coordinate.col);
+    }
+
     private Row getRow(char row) {
         return board.get(row - 'A');
     }
 
     private void setCell(Coordinate coordinate, Ship ship, boolean user) {
         this.getRow(coordinate.row).put(coordinate.col, ship, user);
+    }
+
+    public void shoot(String shot) throws Exception {
+        Row.Cell cell = getCell(shot);
+        boolean result = cell != null && cell.hit();
+        System.out.println(result ? "You hit a ship!" : "You missed!");
+    }
+
+    public void complete() {
+        board.forEach(row -> row.complete());
     }
 
 
@@ -117,12 +132,12 @@ public class Board {
         public Coordinate(String c) throws Exception {
             if (!isValidCoordinateRegex(c)) throw new Exception("Coordinate doesn't match pattern!");
             this.row = c.charAt(0);
-            this.col = (char) (Integer.parseInt(c.substring(1)) + '0');
+            this.col = (char) (Integer.parseInt(c.substring(1)) - 1 + '0');
         }
 
         public Coordinate(char row, char col) {
             this.row = row;
-            this.col = (char) (col - 1);
+            this.col = col;
         }
 
         private boolean isValidCoordinateRegex(String c) {
@@ -160,6 +175,14 @@ public class Board {
             content.set(col - '0', cell);
         }
 
+        public void complete() {
+            for (int i = 0; i < 10; i++) {
+                if (content.get(i) == null) {
+                    content.set(i, new Cell(null));
+                }
+            }
+        }
+
 
         static class Cell {
             private final Ship content;
@@ -183,6 +206,11 @@ public class Board {
                 if (!isTouched) return "~";
                 if (content == null) return "M";
                 return content.toString();
+            }
+
+            public boolean hit() {
+                this.touch();
+                return content != null;
             }
         }
     }

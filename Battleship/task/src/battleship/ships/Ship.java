@@ -28,4 +28,6 @@ public abstract class Ship {
     public int getLength() {
         return this.length;
     }
+
+    abstract public Ship copy();
 }

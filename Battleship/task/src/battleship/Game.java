@@ -13,22 +13,38 @@ public class Game {
         this.run();
     }
 
+    //    List<Ship> ships = List.of(new AircraftCarrier());
     List<Ship> ships = List.of(new AircraftCarrier(), new Battleship(), new Submarine(), new Cruiser(), new Destroyer());
 
     Board userBoard = new Board(true);
     Board computerBoard = new Board();
+    Scanner scanner = new Scanner(System.in);
+//
 
     private void run() {
         this.init();
+        System.out.println("The game starts!");
+        printBoard(computerBoard);
+        System.out.println("Take a shot!");
+        while (true) {
+            String shot = scanner.nextLine();
+            try {
+                computerBoard.shoot(shot);
+                printBoard(computerBoard);
+                break;
+            } catch (Exception ignored) {
+
+            }
+        }
     }
 
     private void init() {
-        printUserBoard();
+        printBoard(userBoard);
         this.placeUserShips();
+        this.placeComputerShips();
     }
 
     private void placeUserShips() {
-        Scanner scanner = new Scanner(System.in);
         List<Ship> shipsToSet = new ArrayList<>(ships);
         while (!shipsToSet.isEmpty()) {
             Ship ship = shipsToSet.get(0);
@@ -36,16 +52,23 @@ public class Game {
             try {
                 String[] coordinates = scanner.nextLine().split(" ");
                 userBoard.placeShip(ship, coordinates);
+                Ship copiedShip = ship.copy();
+                computerBoard.placeShip(copiedShip, coordinates);
                 shipsToSet.remove(ship);
-                printUserBoard();
+                printBoard(userBoard);
             } catch (Exception e) {
-//                throw e;
                 System.out.println("Error! " + e.getMessage() + " Try again:");
             }
         }
+        userBoard.complete();
+        computerBoard.complete();
+
     }
 
-    private void printUserBoard() {
-        System.out.println(userBoard);
+    private void placeComputerShips() {
+    }
+
+    private void printBoard(Board board) {
+        System.out.println(board);
     }
 }
