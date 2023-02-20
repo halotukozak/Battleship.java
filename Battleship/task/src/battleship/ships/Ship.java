@@ -5,36 +5,23 @@ public class Ship {
     private final String name;
     private final int length;
 
-    private final String owner;
     private int lives;
 
-    public Ship(String name, int length, String owner) {
+    public Ship(String name, int length) {
         this.name = name;
         this.length = length;
         this.lives = length;
-        this.owner = owner;
-    }
-
-    public Ship(String name, int length) {
-        this(name, length, "player");
     }
 
     public String getName() {
         return this.name;
     }
 
-    @Override
-    public String toString() {
-        return owner.equals("computer") ? "X" : "O";
-    }
 
     public int getLength() {
         return this.length;
     }
 
-    public Ship copy() {
-        return new Ship(this.name, this.length, "computer");
-    }
 
     static public Ship AircraftCarrier() {
         return new Ship(BRAND.AircraftCarrier.name, BRAND.AircraftCarrier.length);

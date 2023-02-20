@@ -3,9 +3,7 @@ package battleship;
 import battleship.boards.Board;
 import battleship.ships.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Game {
 
@@ -13,69 +11,85 @@ public class Game {
         this.run();
     }
 
+    Map<Integer, Board> boards = new HashMap<>();
 
-    List<Ship> ships = List.of(Ship.AircraftCarrier(), Ship.Battleship(), Ship.Submarine(), Ship.Cruiser(), Ship.Destroyer());
-
-    Board userBoard = new Board(true);
-    Board computerBoard = new Board();
     Scanner scanner = new Scanner(System.in);
 
 
     private void run() {
         this.init();
         System.out.println("The game starts!");
-        printBoard(computerBoard);
-        System.out.println("Take a shot!");
-
+        int currPlayer = 1;
         while (true) {
-            String shot = scanner.nextLine();
+            System.out.println("Press Enter and pass the move to another player");
+            scanner.nextLine();
+            System.out.println("Player " + currPlayer + ", it's your turn:");
+            Ship.STATE result = move(currPlayer);
+            if (result == Ship.STATE.ALL_SUNK) return;
+            currPlayer = opponent(currPlayer);
+        }
+    }
+
+    private Ship.STATE move(int player) {
+        Board board = boards.get(player);
+        Board opponentBoard = boards.get(opponent(player));
+
+        printBoard(opponentBoard, player);
+        System.out.println("---------------------");
+        printBoard(board, player);
+        while (true) {
             try {
-                Ship.STATE result = computerBoard.shoot(shot);
+                String shot = scanner.nextLine();
+                Ship.STATE result = opponentBoard.shoot(shot);
                 String output = switch (result) {
-                    case DOWN, SUNK -> "You hit a ship!";
+                    case DOWN -> "You hit a ship!";
+                    case SUNK -> "You sank a ship!";
                     case MISSED -> "You missed!";
                     case ALL_SUNK -> "You sank the last ship. You won. Congratulations!";
                 };
-                printBoard(computerBoard);
                 System.out.println(output);
-                if (result == Ship.STATE.ALL_SUNK) break;
-            } catch (Exception ignored) {
-
+                return result;
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
         }
     }
 
-    private void init() {
-        printBoard(userBoard);
-        this.placeUserShips();
-        this.placeComputerShips();
+    private static int opponent(int player) {
+        return player == 1 ? 2 : 1;
     }
 
-    private void placeUserShips() {
-        List<Ship> shipsToSet = new ArrayList<>(ships);
+    private void init() {
+        this.placeUserShips(1);
+        System.out.println("Press Enter and pass the move to another player\n" + "...");
+        scanner.nextLine();
+        this.placeUserShips(2);
+        System.out.println("...");
+    }
+
+    private void placeUserShips(int player) {
+        List<Ship> shipsToSet = new ArrayList<>(List.of(Ship.AircraftCarrier(), Ship.Battleship(), Ship.Submarine(), Ship.Cruiser(), Ship.Destroyer()));
+        System.out.printf("Player %d, place your ships on the game field\n", player);
+        Board board = new Board(player);
+        printBoard(board, player);
         while (!shipsToSet.isEmpty()) {
             Ship ship = shipsToSet.get(0);
             System.out.printf("Enter the coordinates of the %s (%d cells):\n", ship.getName(), ship.getLength());
             try {
                 String[] coordinates = scanner.nextLine().split(" ");
-                userBoard.placeShip(ship, coordinates);
-                Ship copiedShip = ship.copy();
-                computerBoard.placeShip(copiedShip, coordinates);
+                board.placeShip(ship, coordinates);
                 shipsToSet.remove(ship);
-                printBoard(userBoard);
+                System.out.println();
+                printBoard(board, player);
             } catch (Exception e) {
                 System.out.println("Error! " + e.getMessage() + " Try again:");
             }
         }
-        userBoard.complete();
-        computerBoard.complete();
-
+        board.complete();
+        boards.put(player, board);
     }
 
-    private void placeComputerShips() {
-    }
-
-    private void printBoard(Board board) {
-        System.out.println(board);
+    private void printBoard(Board board, int player) {
+        System.out.println(board.print(player));
     }
 }
