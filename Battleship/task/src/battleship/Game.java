@@ -13,25 +13,32 @@ public class Game {
         this.run();
     }
 
-    //    List<Ship> ships = List.of(new AircraftCarrier());
-    List<Ship> ships = List.of(new AircraftCarrier(), new Battleship(), new Submarine(), new Cruiser(), new Destroyer());
+
+    List<Ship> ships = List.of(Ship.AircraftCarrier(), Ship.Battleship(), Ship.Submarine(), Ship.Cruiser(), Ship.Destroyer());
 
     Board userBoard = new Board(true);
     Board computerBoard = new Board();
     Scanner scanner = new Scanner(System.in);
-//
+
 
     private void run() {
         this.init();
         System.out.println("The game starts!");
         printBoard(computerBoard);
         System.out.println("Take a shot!");
+
         while (true) {
             String shot = scanner.nextLine();
             try {
-                computerBoard.shoot(shot);
+                Ship.STATE result = computerBoard.shoot(shot);
+                String output = switch (result) {
+                    case DOWN, SUNK -> "You hit a ship!";
+                    case MISSED -> "You missed!";
+                    case ALL_SUNK -> "You sank the last ship. You won. Congratulations!";
+                };
                 printBoard(computerBoard);
-                break;
+                System.out.println(output);
+                if (result == Ship.STATE.ALL_SUNK) break;
             } catch (Exception ignored) {
 
             }

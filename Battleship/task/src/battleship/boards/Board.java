@@ -7,6 +7,7 @@ import java.util.*;
 public class Board {
     private final List<Row> board = new ArrayList<>(10);
     private boolean user = false;
+    private int ships = 0;
 
     //    public <T extends Row> Board(Class<T> c) {
 //        try {
@@ -37,8 +38,11 @@ public class Board {
         StringBuilder output = new StringBuilder();
         output.append("  1 2 3 4 5 6 7 8 9 10");
         output.append(System.getProperty("line.separator"));
+        char letter = 'A';
         for (int i = 0; i < 10; i++) {
+            output.append(letter);
             output.append(board.get(i));
+            letter++;
             output.append(System.getProperty("line.separator"));
         }
         return output.toString();
@@ -52,6 +56,7 @@ public class Board {
             throw new Exception("Wrong length of the " + ship.getName() + "!");
         checkPlace(allCoordinates);
         allCoordinates.forEach(c -> setCell(c, ship, user));
+        ships++;
     }
 
     private void checkPlace(List<Coordinate> coordinates) throws Exception {
@@ -113,14 +118,16 @@ public class Board {
         this.getRow(coordinate.row).put(coordinate.col, ship, user);
     }
 
-    public void shoot(String shot) throws Exception {
+    public Ship.STATE shoot(String shot) throws Exception {
         Row.Cell cell = getCell(shot);
-        boolean result = cell != null && cell.hit();
-        System.out.println(result ? "You hit a ship!" : "You missed!");
+        Ship.STATE result = cell.hit();
+        if (result == Ship.STATE.SUNK) ships--;
+        if (ships == 0) return Ship.STATE.ALL_SUNK;
+        else return result;
     }
 
     public void complete() {
-        board.forEach(row -> row.complete());
+        board.forEach(Row::complete);
     }
 
 
@@ -147,18 +154,12 @@ public class Board {
 
 
     static class Row {
-        char letter;
-        static char lastLetter = '@';
         List<Cell> content = new ArrayList<>(Collections.nCopies(10, null));
 
-        public Row() {
-            this.letter = ++lastLetter;
-        }
 
         @Override
         public String toString() {
             StringBuilder output = new StringBuilder();
-            output.append(letter);
             for (Cell cell : content) {
                 output.append(" ");
                 output.append(cell != null ? cell : '~');
@@ -208,9 +209,13 @@ public class Board {
                 return content.toString();
             }
 
-            public boolean hit() {
-                this.touch();
-                return content != null;
+            public Ship.STATE hit() {
+                if (!isTouched) {
+                    this.touch();
+                    if (content == null) return Ship.STATE.MISSED;
+                    return content.hit();
+                }
+                return Ship.STATE.MISSED;
             }
         }
     }
